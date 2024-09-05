@@ -17,7 +17,17 @@ namespace System.SceneManagement{
         bool isLoading;
 
         public readonly SceneGroupManager manager = new SceneGroupManager();
-        
+
+        EventBinding<TestEvent> testEventBinding;
+        void OnEnable()
+        {
+            testEventBinding = new EventBinding<TestEvent>(OnTestEvent);
+            EventBus<TestEvent>.Register(testEventBinding);
+        }
+        void OnDisable()
+        {
+            EventBus<TestEvent>.Deregister(testEventBinding);
+        }
         void Awake() {
             // TODO can remove
             manager.OnSceneLoaded += sceneName => Debug.Log("Loaded: " + sceneName);
@@ -28,7 +38,9 @@ namespace System.SceneManagement{
         async void Start() {
             await LoadSceneGroup(0);
         }
-
+        void OnTestEvent(){
+            Debug.Log("Test Event");
+        }
 
         public async void LoadScene2(){
              await LoadSceneGroup(1);
@@ -36,6 +48,9 @@ namespace System.SceneManagement{
         void Update() {
             if(Input.GetKeyDown(KeyCode.Space)){
                 LoadScene2();
+            }
+            if(Input.GetKeyDown(KeyCode.W)){
+                EventBus<TestEvent>.Raise(new TestEvent());
             }
         
             if (!isLoading) return;
